@@ -1,0 +1,114 @@
+#:import LevelTank view.components.level_tank.LevelTank
+#:import DialogSetting view.components.dialog.DialogSetting
+
+
+<MainScreen>
+    md_bg_color: "white"
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: dp(10)
+        padding: dp(0), dp(8)
+        MDLabel:
+            text: "Panel de Agua"
+            adaptive_size: True
+            halign: "center"
+            font_style: "Display"
+            role: "small"
+            pos_hint: {'center_x': 0.5}
+        MDGridLayout:
+            cols: 2
+            spacing: dp(10)
+            padding: dp(15), dp(15)
+            adaptive_height: True
+            MDCard:
+                orientation: 'vertical'
+                adaptive_height: True
+                padding: dp(6), dp(6)
+                style: "elevated"
+                theme_bg_color: "Custom"
+                md_bg_color: "white"
+                spacing: dp(8)
+                MDButtonIcon:
+                    id: icon_connection_tanque
+                    icon: "circle"    
+                    theme_font_size: "Custom"
+                    font_size: dp(15)
+                    theme_icon_color: "Custom" 
+                    icon_color: "grey"
+                    pos_hint: {'center_x': 0.95}
+                MDLabel:
+                    text: "Tanque"
+                    halign: "center"
+                    font_style: "Headline"
+                    role: "large"
+                    adaptive_size: True
+                    pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                    theme_text_color: "Custom"
+                LevelTank:
+                    id: tanque
+                MDLabel:
+                    id: lb_time_left
+                    text: " "
+                    font_style: "Title"
+                    role: "small"
+                    adaptive_size: True
+                    pos_hint: {'center_x': 0.5,'center_y': 0.5}
+            MDCard:
+                orientation: 'vertical'
+                adaptive_height: True
+                padding: dp(6), dp(6)
+                style: "elevated"
+                theme_bg_color: "Custom"
+                md_bg_color: "white"
+                spacing: dp(8)
+                MDButtonIcon:
+                    id: icon_connection_cisterna
+                    icon: "circle"    
+                    theme_font_size: "Custom"
+                    font_size: dp(15)
+                    theme_icon_color: "Custom" 
+                    icon_color: "grey"
+                    pos_hint: {'center_x': 0.95}
+                MDLabel:
+                    text: "Cisterna"
+                    halign: "center"
+                    font_style: "Headline"
+                    role: "large"
+                    adaptive_size: True
+                    pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                    theme_text_color: "Custom"
+                LevelTank:        
+                    id: cisterna  
+                MDLabel:
+                    text: " "
+                    adaptive_size: True
+                    font_style: "Title"
+                    role: "small"
+                    pos_hint: {'center_x': 0.5,'center_y': 0.5} 
+        MDButton:
+            id: bt_power_on_off
+            style: "filled"
+            theme_bg_color: "Custom"
+            md_bg_color: "blue"
+            pos_hint: {'center_x': 0.5}
+            on_release:
+                root.power_on()
+            MDButtonText:
+                id: bt_power_on_off_label
+                text: "LLENAR TANQUE"
+        Widget:
+
+    MDFloatLayout:
+        MDCircularProgressIndicator:
+            id: circular_progress
+            pos: bt_power_on_off.pos[0]-dp(32), bt_power_on_off.pos[1]+bt_power_on_off.height*0.5-dp(8),
+            size_hint: None, None
+            size: dp(16), dp(16)
+            color: "grey"
+            active: False
+    MDFloatLayout:
+        MDIconButton:
+            pos: root.width - self.width - dp(8), root.height - self.height - dp(8)
+            icon: "cog"
+            on_release:
+                root.open_setting()

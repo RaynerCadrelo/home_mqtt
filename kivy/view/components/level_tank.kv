@@ -1,0 +1,40 @@
+
+<LevelTank>
+    size_hint: 1, None
+    height: self.width
+    RelativeLayout:
+        canvas:
+            Color:
+                rgb: 0.9, 0.9, .9
+            Ellipse:
+                pos: 0, 0
+                size: self.size
+            Color:
+                rgb: (0.1, 0.1, 1) if root.level > 30 else ((0.8, 0.8, 0) if root.level > 10 else (1, 0, 0))
+            Ellipse:
+                angle_start: 0
+                angle_end: root.level*3.6 if root.level != -1000000000 else 0
+                pos: 0, 0
+                size: self.size
+            Color:
+                rgb: 1, 1, 1
+            Ellipse:
+                pos: dp(5), dp(5)
+                size: self.size[0]-dp(10), self.size[1]-dp(10)
+        MDLabel:
+            id: lb_precent
+            text: f"{root.level if root.level != -1000000000 else '--'}{'%' if root.level != -1000000000 else ''}"
+            color: "black"
+            halign: "center"
+            adaptive_size: True
+            font_style: "Display"
+            pos_hint: {'center_x': 0.5,'center_y': 0.5}
+        MDLabel:
+            text: f"{root.rate_formated if root.rate != -1000000000 else '--'}{' L/min' if root.rate != -1000000000 else ''}"
+            color: "black"
+            halign: "center"
+            adaptive_size: True
+            font_style: "Title"
+            role: "medium"
+            pos_hint: {'center_x': 0.5}
+            y: lb_precent.y - self.height

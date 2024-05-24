@@ -1,0 +1,71 @@
+<DialogSetting>
+    MDCard:
+        theme_bg_color: "Custom"
+        size_hint: 1, 1
+        md_bg_color: "#000000EE"
+        radius: 0
+        on_release:
+            root.is_canceled = True
+            root.close_setting()
+        MDRelativeLayout:
+            size_hint: 1, 1
+            MDCard:
+                size_hint: None, None
+                pos_hint: {'center_x': 0.5,'center_y': 0.5}
+                theme_bg_color: "Custom"
+                md_bg_color: "white"
+                size_hint: 0.8, 0.8
+                orientation: 'vertical'
+                padding: dp(8), dp(8)
+                spacing: dp(40)
+                MDLabel:
+                    text: "Ajustes"
+                    pos_hint: {'center_x': 0.5}
+                    adaptive_size: True
+                    theme_text_color: "Custom"
+                    text_color: "black"
+                    font_style: "Display"
+                    role: "small"                    
+                MDTextField:
+                    id: broker
+                    mode: "filled"
+                    MDTextFieldHintText:
+                        text: "Broker"
+                    MDTextFieldHelperText:
+                        text: "Ejemplos: localhost, 192.168.1.94"
+                        mode: "persistent"
+                MDTextField:
+                    id: topic
+                    mode: "filled"
+                    MDTextFieldHintText:
+                        text: "Topic Turbina"
+                    MDTextFieldHelperText:
+                        text: "Ejemplos: casa_rayner/turbina"
+                        mode: "persistent"
+                MDTextField:
+                    id: topic_action
+                    mode: "filled"
+                    MDTextFieldHintText:
+                        text: "Topic Action Turbina"
+                    MDTextFieldHelperText:
+                        text: "Ejemplos: casa_rayner/turbina/action"
+                        mode: "persistent"
+                MDBoxLayout:
+                    MDButton:
+                        style: "elevated"
+                        theme_bg_color: "Custom"
+                        md_bg_color: self.theme_cls.backgroundColor
+                        on_release:
+                            root.is_canceled = True
+                            root.close_setting()
+                        MDButtonText:
+                            text: "CANCEL"
+                    Widget:
+                    MDButton:
+                        style: "elevated"
+                        on_release:
+                            root.close_setting()
+                        MDButtonText:
+                            text: "ACEPTAR"
+                    
+                Widget:
