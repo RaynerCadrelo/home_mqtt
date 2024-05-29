@@ -19,7 +19,7 @@ TURBINA_ACTION = "casa_rayner/turbina/action"
 ARDUINO = "casa_rayner/arduino"
 ARDUINO_ACTION = "casa_rayner/arduino/action"
 
-TIME_PUBLISH = 3
+TIME_PUBLISH = 3  # Tiempo máximo para publicar es estado de la turbina
 
 ANALOGIC_PORT = "A0"  # Pin del conversor analógico digital del tanque
 DIGITAL_PORT = "D4"  # Pin conectado a la turbina
@@ -201,19 +201,20 @@ async def turbina_power_on(stop_level: int):
             logging.warning("Apagado por exceso de tiempo de encendido")
             break
         # comprobar si el nivel del agua está subiendo
-        if timedelta.seconds >= (TIME_DELTA_RATE*3):
+        if timedelta.seconds >= (TIME_DELTA_RATE*4):
             if turbina.rate <= 0:
                 logging.warning("Apagado por no detectar cambio positivo en nivel del tanque")
                 break
         # sensor de seguridad de máximo nivel activado
         if turbina.sensor_max:
-            logging.warning("Apagado por sensor de nivel máximo")
+            logging.warning("Apagado por sensor de nivel máximo de seguridad")
             break
         # forzar el apagado de la turbina
         if turbina.force_power_off:
             turbina.force_power_off = 0
             logging.info("Apagado forzado")
             break
+        # poner en alto con confirmación el pin D4 del arduino.
         if i == 5:
             await publish(topic=ARDUINO_ACTION, value='{"D4": 3}')
             i = 0
@@ -228,12 +229,15 @@ async def auto_power_on():
             datetime_start = datetime.datetime.now()
             timer_turbina = list(filter(lambda x: (x['time_start'] <= datetime_start.time() < x['time_end']), TIMER_TURBINA))
             if timer_turbina:
+                if not timer_turbina[0]['active']:
+                    continue
                 min_level = timer_turbina[0]['min_level']
                 stop_level = timer_turbina[0]['stop_level']
-                if turbina.level_percent <= min_level:
-                    logging.info("Encendido automático de la turbina")
-                    await turbina_power_on(stop_level=stop_level)
-                    await asyncio.sleep(60*30)  # esperar 30 minutos.
+                if turbina.level_percent != -1:
+                    if turbina.level_percent <= min_level:
+                        logging.info("Encendido automático de la turbina")
+                        await turbina_power_on(stop_level=stop_level)
+                        await asyncio.sleep(60*30)  # esperar 30 minutos.
         except Exception as e:
             logging.error(e)
 

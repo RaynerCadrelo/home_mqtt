@@ -14,12 +14,12 @@
      F -> A5    D5    400ms
      G -> A6    D6    500ms
      H -> A7    D7    600ms
-     I -> A8    D8    700ms
-     J -> A9    D9    800ms
-     K -> A10   D10   900ms
-     L -> A11   D11   1000ms
-     M -> A12   D12   1200ms
-     N -> A13   D13   1500ms
+     I -> ---   D8    700ms
+     J -> ---   D9    800ms
+     K -> ---   D10   900ms
+     L -> ---   D11   1000ms
+     M -> ---   D12   1200ms
+     N -> ---   D13   1500ms
      O -> ---   ---   1700ms
      P -> ---   ---   2000ms
      Q -> ---   ---   3000ms
@@ -296,10 +296,6 @@ void active_analogic(char an, uint8_t active){
       vA7_active = active;
       break;
   }
-}
-
-void desactive_analogic(char an){
-
 }
 
 int str2pin(char c){
