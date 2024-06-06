@@ -4,6 +4,7 @@ from kivy.properties import ObjectProperty, NumericProperty, StringProperty
 
 class LevelTank(MDBoxLayout):
     level = NumericProperty(-1000000000)
+    level_stop = NumericProperty(-1000000000)
     rate = NumericProperty(-1000000000)
     rate_formated = StringProperty("")
 

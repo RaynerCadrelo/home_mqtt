@@ -6,8 +6,9 @@ import asyncio
 import logging
 from aiomqtt.exceptions import MqttError
 from kivymd.app import MDApp
-from view.components.dialog import DialogSetting
+from view.components.dialog import DialogSetting, DialogSettingTanque
 import config
+from libs.turbina import Turbina
 
 
 class MainScreen(MDScreen):
@@ -19,6 +20,7 @@ class MainScreen(MDScreen):
         asyncio.create_task(self.start_tasks())
         self.running_turbina = 0
         self.cont_seg_connection = 0
+        self.turbina = Turbina()
 
     async def refresh_is_connect(self):
         while True:
@@ -33,8 +35,12 @@ class MainScreen(MDScreen):
         try:
             infos = mqtt_tanque.info_turbina(host=self.setting.host, topic=self.setting.topic_turbina)
             async for info in infos:
+                info_model = Turbina(**info)
+                update_turbina = info_model.dict(exclude_unset=True)
+                self.turbina = self.turbina.copy(update=update_turbina)
                 self.cont_seg_connection = self.setting.time_is_connected
                 self.ids["tanque"].level = info.get("level_percent", -1000000000)
+                self.ids["tanque"].level_stop = info.get("level_percent_stop", -1000000000)
                 self.ids["tanque"].rate = info.get("rate", -1000000000)
                 self.ids["cisterna"].level = info.get("level_percent_cisterna", -1000000000)
                 seconds_left = info.get("seconds_left", -1)
@@ -163,3 +169,20 @@ class MainScreen(MDScreen):
                 await self.reset_tasks()
             self.remove_widget(dialog_setting)
         asyncio.create_task(open())
+    
+    def open_setting_tank(self):
+        async def open():
+            dialog_setting = DialogSettingTanque()
+            dialog_setting.level_stop = self.turbina.level_percent_stop
+            self.add_widget(dialog_setting)
+            async with dialog_setting.condition:
+                await dialog_setting.condition.wait()
+            if not dialog_setting.is_canceled:
+                await mqtt_tanque.turbina_level_stop(
+                            host=self.setting.host,
+                            topic=self.setting.topic_turbina_action,
+                            level_stop=dialog_setting.level_stop)
+            self.remove_widget(dialog_setting)
+        asyncio.create_task(open())
+    
+

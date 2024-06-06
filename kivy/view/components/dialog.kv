@@ -1,4 +1,4 @@
-<DialogSetting>
+<Dialog>
     MDCard:
         theme_bg_color: "Custom"
         size_hint: 1, 1
@@ -19,37 +19,18 @@
                 padding: dp(8), dp(8)
                 spacing: dp(40)
                 MDLabel:
-                    text: "Ajustes"
+                    text: root.title
                     pos_hint: {'center_x': 0.5}
                     adaptive_size: True
                     theme_text_color: "Custom"
                     text_color: "black"
                     font_style: "Display"
-                    role: "small"                    
-                MDTextField:
-                    id: broker
-                    mode: "filled"
-                    MDTextFieldHintText:
-                        text: "Broker"
-                    MDTextFieldHelperText:
-                        text: "Ejemplos: localhost, 192.168.1.94"
-                        mode: "persistent"
-                MDTextField:
-                    id: topic
-                    mode: "filled"
-                    MDTextFieldHintText:
-                        text: "Topic Turbina"
-                    MDTextFieldHelperText:
-                        text: "Ejemplos: casa_rayner/turbina"
-                        mode: "persistent"
-                MDTextField:
-                    id: topic_action
-                    mode: "filled"
-                    MDTextFieldHintText:
-                        text: "Topic Action Turbina"
-                    MDTextFieldHelperText:
-                        text: "Ejemplos: casa_rayner/turbina/action"
-                        mode: "persistent"
+                    role: "small"
+                MDBoxLayout:
+                    id: container
+                    orientation: 'vertical'
+                    adaptive_height: True
+                    spacing: dp(40)
                 MDBoxLayout:
                     MDButton:
                         style: "elevated"
@@ -67,5 +48,44 @@
                             root.close_setting()
                         MDButtonText:
                             text: "ACEPTAR"
-                    
                 Widget:
+<DialogSetting>
+    title: "Ajustes"            
+    MDTextField:
+        id: broker
+        mode: "filled"
+        MDTextFieldHintText:
+            text: "Broker"
+        MDTextFieldHelperText:
+            text: "Ejemplos: localhost, 192.168.1.94"
+            mode: "persistent"
+    MDTextField:
+        id: topic
+        mode: "filled"
+        MDTextFieldHintText:
+            text: "Topic Turbina"
+        MDTextFieldHelperText:
+            text: "Ejemplos: casa_rayner/turbina"
+            mode: "persistent"
+    MDTextField:
+        id: topic_action
+        mode: "filled"
+        MDTextFieldHintText:
+            text: "Topic Action Turbina"
+        MDTextFieldHelperText:
+            text: "Ejemplos: casa_rayner/turbina/action"
+            mode: "persistent"
+
+<DialogSettingTanque>
+    MDLabel:
+        text: f"Nivel máximo ({slider.value}):"
+    MDSlider:
+        id: slider
+        max: 100
+        min: 5
+        step: 5
+        value: root.level_stop
+        on_value:
+            root.level_stop = self.value
+        MDSliderHandle:
+        MDSliderValueLabel:
