@@ -64,6 +64,7 @@ class Turbina(BaseModel):
     seconds_left: int = -1  # tiempo restante en segundos
     level_percent: int = -1  # porciento del nivel del tanque
     level_adc: int = -1  # valor del adc en arduino del nivel del tanque de 0 - 1023
+    level_percent_stop: int = 100  # porciento del nivel del tanque para apagarse
     sensor_max: int = 0  # Sensor de seguridad de nivel máximo en el tanque
     rate: int = 0  # flujo del agua en mL/min
     force_power_off: int = 0  # forzar apagar la turbina
@@ -81,13 +82,11 @@ async def subscribe_turbina_action(topic: str):
                 await client.subscribe(topic=topic)
                 async for message in client.messages:
                     msg_json = json.loads(message.payload.decode())
+                    if not msg_json.get("stop_level", None) is None:
+                        turbina.level_percent_stop = msg_json.get("stop_level", None)
                     if not msg_json.get("power", None) is None:
-                        if not msg_json.get("stop_level", None) is None:
-                            stop_level = msg_json.get("stop_level", None)
-                        else:
-                            stop_level = 100
                         if msg_json.get("power", None) == 1:
-                            asyncio.create_task(turbina_power_on(stop_level=stop_level))
+                            asyncio.create_task(turbina_power_on())
                         if msg_json.get("power", None) == 0:
                             asyncio.create_task(turbina_power_off())
         except Exception as e:
@@ -184,15 +183,14 @@ async def refresh_time_left():
         turbina.seconds_left = int(seconds_left)
     turbina.seconds_left = -1
 
-async def turbina_power_on(stop_level: int):
+async def turbina_power_on():
     logging.info("Encender turbina.")
     i = 5
     datetime_start: datetime.datetime = datetime.datetime.now()
     asyncio.create_task(refresh_time_left())
     while True:
-        await asyncio.sleep(0.7)
         # llegado al máximo nivel
-        if turbina.level_percent >= stop_level:
+        if turbina.level_percent >= turbina.level_percent_stop:
             logging.info("Apagado por alcanzar el nivel máximo programado")
             break
         # tiempo de llenado excedido Fallo!!
@@ -219,6 +217,7 @@ async def turbina_power_on(stop_level: int):
             await publish(topic=ARDUINO_ACTION, value='{"D4": 3}')
             i = 0
         i += 1
+        await asyncio.sleep(0.7)
     await publish(topic=ARDUINO_ACTION, value='{"D4": 0}')  # apagar turbina
     logging.info("Apagado de turbina")
 
