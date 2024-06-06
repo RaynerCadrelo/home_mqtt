@@ -45,16 +45,7 @@
      1 -> activar lectura del analógico
 */
 // JSON
-int const SIZE_STROUT = 512;
-
-int adc_a0 = 0;
-int adc_a1 = 0;
-int adc_a2 = 0;
-int adc_a3 = 0;
-int adc_a4 = 0;
-int adc_a5 = 0;
-int adc_a6 = 0;
-int adc_a7 = 0;
+int const SIZE_STROUT = 200;
 
 char strout[] = "{\"A0\":%d,\
 \"A1\":%d,\
@@ -77,10 +68,7 @@ char strout[] = "{\"A0\":%d,\
 \"D12\":%d,\
 \"D13\":%d}";
 char strout_s[SIZE_STROUT] = "";
-char strout_json[SIZE_STROUT] = "";
 
-int SENSOR_MAX_PIN = 3;
-int sensor_max = 0;
 uint8_t vD2, vD3, vD4, vD5, vD6, vD7, vD8, vD9, vD10, vD11, vD12, vD13;  // valor del pin digital
 int vA0, vA1, vA2, vA3, vA4, vA5, vA6, vA7;  // valor del conversor analógico
 uint8_t vA0_active=0, vA1_active=0, vA2_active=0, vA3_active=0, vA4_active=0, vA5_active=0, vA6_active=0, vA7_active=0;
@@ -92,8 +80,6 @@ unsigned long delay_loop = 1000;  // Tiempo de retardo del loop.
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  pinMode(SENSOR_MAX_PIN, INPUT);
-  pinMode(13, OUTPUT);
   analogReference(INTERNAL);  // 1.1 volt
 }
 
