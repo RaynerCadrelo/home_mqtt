@@ -85,6 +85,7 @@ class OutputProtocol(asyncio.Protocol):
         self.transport.write(b'\n')     # Limpiar
         self.transport.write(b'AA1\n')  # Activar el analógico 0
         self.transport.write(b'DD3\n')  # Poner como entrada el pin D3
+        self.transport.write(b'DF3\n')  # Poner como entrada el pin D5
         self.transport.write(b'DE4\n')  # Poner como salida el pin D4
         self.transport.write(b'TI0\n')  # Configurar el período del loop en I->700 ms
 

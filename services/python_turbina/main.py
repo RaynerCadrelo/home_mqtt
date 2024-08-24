@@ -23,40 +23,20 @@ TIME_PUBLISH = 3  # Tiempo máximo para publicar es estado de la turbina
 
 ANALOGIC_PORT = "A0"  # Pin del conversor analógico digital del tanque
 DIGITAL_PORT = "D4"  # Pin conectado a la turbina
-DIGITAL_PORT_SENSOR_MAX = "D3"
+DIGITAL_PORT_SENSOR_MAX = "D3"  # Pin conectado a los electrodos de nivel máximo
+DIGITAL_PORT_SUN_LIGHT = "D5"  # Pin conectado al sensor de luz
 
-FITTING_ADC_MIN = 215  # valor mínimo del conversor cuando el nivel está al 0%
-FITTING_ADC_MAX = 610  # valor máximo del conversor cuando el nivel está al 100%
+FITTING_ADC_MIN = 384  # valor mínimo del conversor cuando el nivel está al 0%
+FITTING_ADC_MAX = 970  # valor máximo del conversor cuando el nivel está al 100%
 ML_PER_ADC = 1739  # mililitros por valor adc (conversor analógico digital)
 TIME_DELTA_RATE = 90  # tiempo de espera para cálculo del flujo (en segundos)
 ADC_DELTA_RATE = 8  # unidades del conversor a esperar para el cálculo del flujo 
 PERCENT_DELTA_STABILIZE = 0.8  # parámetro para estabilizar el porciento, evitar el ruido.
 
 TIME_MAX_POWER_ON = 2400  # Tiempo máximo que puede estar encendido la turbina (en segundos).
-
-TIMER_TURBINA = [
-    {
-        "time_start": datetime.time.fromisoformat("07:00"),
-        "time_end": datetime.time.fromisoformat("19:59"),
-        "min_level": 30,
-        "stop_level": 100,
-        "active": True
-    },
-    {
-        "time_start": datetime.time.fromisoformat("20:00"),
-        "time_end": datetime.time.fromisoformat("23:59"),
-        "min_level": 5,
-        "stop_level": 40,
-        "active": True
-    },
-    {
-        "time_start": datetime.time.fromisoformat("00:00"),
-        "time_end": datetime.time.fromisoformat("06:59"),
-        "min_level": 1,
-        "stop_level": 5,
-        "active": True
-    }
-]
+SUN_LIGHT_ACTIVE = 1
+SUN_LIGHT_MAX_PERCENT = 100
+SUN_LIGHT_MIN_PERCENT = 60
 
 class Turbina(BaseModel):
     running: int = 0  # 0: apagado, 1: encendido
@@ -65,9 +45,13 @@ class Turbina(BaseModel):
     level_percent: int = -1  # porciento del nivel del tanque
     level_adc: int = -1  # valor del adc en arduino del nivel del tanque de 0 - 1023
     level_percent_stop: int = 100  # porciento del nivel del tanque para apagarse
-    sensor_max: int = 0  # Sensor de seguridad de nivel máximo en el tanque
+    sensor_max: int = 0  # Sensor de seguridad de nivel máximo en el tanque (1: activo, 0: desactivo)
     rate: int = 0  # flujo del agua en mL/min
     force_power_off: int = 0  # forzar apagar la turbina
+    sun_light: int = 0  # 0: si hay luz del Sol, 1: si hay luz del Sol.
+    sun_light_active: int = SUN_LIGHT_ACTIVE
+    sun_light_max_percent: int = SUN_LIGHT_MAX_PERCENT
+    sun_light_min_percent: int = SUN_LIGHT_MIN_PERCENT
 
 turbina = Turbina()
 
@@ -114,6 +98,8 @@ async def subscribe_turbina(topic: str):
                             turbina.running = msg_json[DIGITAL_PORT]
                         if not msg_json.get(DIGITAL_PORT_SENSOR_MAX, None) is None:
                             turbina.sensor_max = msg_json[DIGITAL_PORT_SENSOR_MAX]
+                        if not msg_json.get(DIGITAL_PORT_SUN_LIGHT, None) is None:
+                            turbina.sun_light = not msg_json[DIGITAL_PORT_SUN_LIGHT]
         except Exception as e:
             logging.error(e)
         await asyncio.sleep(5)
@@ -225,17 +211,23 @@ async def auto_power_on():
     while True:
         try:
             await asyncio.sleep(10)
-            datetime_start = datetime.datetime.now()
-            timer_turbina = list(filter(lambda x: (x['time_start'] <= datetime_start.time() < x['time_end']), TIMER_TURBINA))
-            if timer_turbina:
-                if not timer_turbina[0]['active']:
-                    continue
-                min_level = timer_turbina[0]['min_level']
-                stop_level = timer_turbina[0]['stop_level']
+            if turbina.sun_light_active:
                 if turbina.level_percent != -1:
-                    if turbina.level_percent <= min_level:
+                    async def power_on():
                         logging.info("Encendido automático de la turbina")
-                        await turbina_power_on(stop_level=stop_level)
+                        await turbina_power_on()
+                    if turbina.level_percent <= turbina.sun_light_min_percent and turbina.sun_light:
+                        level_saved = turbina.level_percent_stop
+                        turbina.level_percent_stop = turbina.sun_light_max_percent
+                        await power_on()
+                        turbina.level_percent_stop = level_saved  # retomar el nivel máximo anterior 
+                        await asyncio.sleep(60*30)  # esperar 30 minutos.
+                        continue
+                    if turbina.level_percent <= 1:
+                        level_saved = turbina.level_percent_stop
+                        turbina.level_percent_stop = 5
+                        await power_on()
+                        turbina.level_percent_stop = level_saved  # retomar el nivel máximo anterior
                         await asyncio.sleep(60*30)  # esperar 30 minutos.
         except Exception as e:
             logging.error(e)
